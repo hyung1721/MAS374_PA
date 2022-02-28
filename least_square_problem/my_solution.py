@@ -18,9 +18,8 @@ def my_lstsq(A, y):
     U, S, Vh = np.linalg.svd(A, full_matrices=False) # To get U_r, I disabled full_matrices paramter.
     S_mat = np.diag(S)
 
-    temporal_result = np.matmul(np.transpose(Vh), np.linalg.inv(S_mat))
-    A_dagger = np.matmul(temporal_result, np.transpose(U))
-    theta   = np.matmul(A_dagger, y)
+    A_dagger = (Vh.T @ np.linalg.inv(S_mat)) @ U.T
+    theta   = A_dagger @ y
 
     return theta
 
