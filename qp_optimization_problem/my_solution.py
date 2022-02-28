@@ -45,8 +45,8 @@ def dual_grad(l, x, A, b):
     # We know that the gradient of the objective dunction in (4) at l is
     # A*A^t*l + b - A*x
 
-    first_term  = np.matmul(np.matmul(A, A.transpose()), l)
-    second_term = b - np.matmul(A, x)
+    first_term  = (A @ A.T) @ l
+    second_term = b - A @ x
     return first_term + second_term
 
 #### ---- Problem 2(c) ---- ####
@@ -64,15 +64,14 @@ def solve_dual(x, A, b):
     # For accuracy
     difference = 9999
     # Choose constant stepsize as described in report P2-(c)
-    step_size = 1 / np.linalg.norm(np.matmul(A, A.transpose()), 'fro')
-
+    step_size = 1 / np.linalg.norm(A @ A.T, 'fro')
     while difference >= tol:
         l_temp = l - step_size * dual_grad(l, x, A, b)
         l_next = dual_proj(l_temp)
         
         # Compute how much [x]_X is changed
-        proj_x      = x - np.matmul(A.transpose(), l)
-        proj_x_next = x - np.matmul(A.transpose(), l_next)
+        proj_x      = x - A.T @ l
+        proj_x_next = x - A.T @ l_next
         difference = l2_norm_of_change(proj_x_next, proj_x)
 
         # Update
@@ -92,7 +91,7 @@ def prim_proj(x, A, b):
     # projection_x = x - A^t * optimal_lambda -> we can compute optimal lambda using solve_dual()
 
     optimal_lamda = solve_dual(x, A, b)
-    proj_x = x - np.matmul(A.transpose(), optimal_lamda)
+    proj_x = x - A.T @ optimal_lamda
     
     return proj_x
 
@@ -103,14 +102,14 @@ def grad_f0(x, H, c) :
         Fill in your code here. (Erase this comment if you want.)
         Read the description, and write a function that does the required.
     """
-    return np.matmul(H, x) + c
+    return H @ x + c
     
 def f0(x, H, c) :
     """
         Fill in your code here. (Erase this comment if you want.)
         Read the description, and write a function that does the required.
     """
-    return 0.5 * np.matmul(np.matmul(x.transpose(), H), x) + np.matmul(c.transpose(), x)
+    return 0.5 * (x.T @ H) @ x + c.T @ x
     
 #### --  A helper function which prints the results in a given format -- ####
 
@@ -119,8 +118,10 @@ def print_results(x_opt, H, c):
     print("optimal value p* =")
     print("", f0(x_opt, H, c), sep = "\t")
     print("\noptimal solution x* =")
+
     for coord in x_opt :
         print("", coord, sep = '\t')
+    
     return
 
 # first example in page 3 of the document, 
